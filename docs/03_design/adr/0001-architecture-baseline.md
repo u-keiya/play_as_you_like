@@ -29,11 +29,15 @@ USDM IDs: US-001, US-002, US-003, US-004, US-005
 2. **バックエンド API**: Node.js (Fastify)  
    * 役割: YouTube メタ取得、譜面シード生成、セッション管理  
    * WebSocket による結果 Push を後方互換で追加可能  
-3. **音声解析マイクロサービス**: Python + librosa  
-   * BPM やエネルギーを抽出  
-   * gRPC で API コンパクト化  
-   * WASM 版をフロント fallback として用意 (US-005 Realtime 演出)  
-4. **インメモリキャッシュ**: Redis  
+3. **音声解析マイクロサービス**: Python + librosa
+   * BPM やエネルギーを抽出
+   * gRPC で API コンパクト化
+   * WASM 版をフロント fallback として用意 (US-005 Realtime 演出)
+   * **Fallback時の重複解析防止策**:
+     - Pythonサービスが過負荷時は「analysis-pending」ステータスとETA（推定完了時刻）を返却し、フロントエンドは即座にWASMへフォールバックせず待機する。
+     - バックエンドはセッションごとにキャッシュキーを発行し、WASM側も同じキーを利用して解析結果の一貫性を担保する。
+     - この設計により、同一セッションでの二重解析やBPM/シード値の不整合を防止する。
+4. **インメモリキャッシュ**: Redis
    * 直前プレイのランダムシードと 15 分以内のセッションデータを保持  
    * Persistence を持たずシンプル運用  
 5. **外部サービス**: YouTube Data / Streaming  
