@@ -1,0 +1,28 @@
+# User Story Map – ブラウザ音ゲー
+# Columns = Backbone アクティビティ
+# Rows    = リリース (MVP α / β など)
+# 各セルに USDM ID を記載
+
+backbone:
+  - id: A
+    title: 曲選択
+  - id: B
+    title: 譜面生成
+  - id: C
+    title: プレイ
+  - id: D
+    title: 結果共有
+
+releases:
+  - name: MVP α
+    rows:
+      - A: [US-002]        # URL 入力→曲情報取得
+      - B: []
+      - C: [US-001]        # 即プレイ体験・ワンキー操作
+      - D: []
+  - name: β
+    rows:
+      - A: []
+      - B: []              # 詳細ストーリー後続
+      - C: []
+      - D: []
