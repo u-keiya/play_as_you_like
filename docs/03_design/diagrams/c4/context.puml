@@ -1,0 +1,23 @@
+@startuml
+!includeurl https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Context.puml
+
+' -------------------------------------------------
+' C4-Context Diagram: PlayAsYouLike Web Rhythm Game
+' -------------------------------------------------
+
+Person(user, "ライトゲーマー", "お気に入り曲で短時間に遊びたいプレイヤー")
+
+System_Boundary(playAsUL, "PlayAsYouLike Web Rhythm Game") {
+    System(playapp, "PlayAsYouLike Web App", "ブラウザで動作するリズムゲーム")
+}
+
+System_Ext(youtube, "YouTube", "音源・動画ストリーミング")
+System_Ext(audioSvc, "Audio Analysis Service", "BPM・スペクトラム解析エンジン")
+
+Rel(user, playapp, "URL入力・プレイ操作", "HTTPS")
+Rel(playapp, youtube, "動画ストリーム取得", "HTTPS")
+Rel(playapp, audioSvc, "BPM解析リクエスト", "REST/JSON")
+
+LAYOUT_WITH_LEGEND()
+
+@enduml
