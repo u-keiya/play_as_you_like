@@ -1,0 +1,19 @@
+@startuml
+' ==========================================================
+' Sequence Diagram — Color Personalize (PresetId: color-XXXXXX)
+' PlayAsYouLike Web Rhythm Game
+' ==========================================================
+actor User
+participant WebSPA
+participant API
+participant FXEngine
+
+User -> WebSPA: URL+基調色選択→Play
+WebSPA -> API: POST /effects/presets/select {presetId: color-FF6699, colorHex: #FF6699}
+API -> FXEngine: applyPreset(color-FF6699, #FF6699)
+FXEngine --> API: OK
+API --> WebSPA: preset selected
+
+note right: #US-006, #ADR-0004\n基調色はPresetId拡張＋colorHexで指定
+
+@enduml
