@@ -1,0 +1,169 @@
+openapi: 3.1.0
+info:
+  title: PlayAsYouLike Backend API
+  version: 0.1.0-draft
+  description: |
+    API skeleton covering US-001〜US-004 endpoints.
+    All payload examples and schemas are **draft** and subject to refinement.
+servers:
+  - url: https://api.playasul.local
+paths:
+  /metadata:
+    get:
+      summary: Fetch track metadata (#US-002)
+      parameters:
+        - name: url
+          in: query
+          required: true
+          schema:
+            $ref: '#/components/schemas/Url'
+      responses:
+        '200':
+          description: Valid URL; metadata returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UrlMetadata'
+        '400':
+          description: Invalid or unsupported URL
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /sessions:
+    post:
+      summary: Create new game session (#US-001)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SessionCreateRequest'
+      responses:
+        '201':
+          description: Session created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SessionCreateResponse'
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /sessions/{id}/pause:
+    patch:
+      summary: Pause running session (#US-004)
+      parameters:
+        - $ref: '#/components/parameters/SessionId'
+      responses:
+        '204':
+          description: Session paused
+        '404':
+          description: Session not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /sessions/{id}/resume:
+    patch:
+      summary: Resume paused session (#US-004)
+      parameters:
+        - $ref: '#/components/parameters/SessionId'
+      responses:
+        '204':
+          description: Session resumed
+        '404':
+          description: Session not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /sessions/{id}:
+    delete:
+      summary: Quit and delete session
+      parameters:
+        - $ref: '#/components/parameters/SessionId'
+      responses:
+        '204':
+          description: Session deleted
+        '404':
+          description: Session not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+components:
+  parameters:
+    SessionId:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+  schemas:
+    Url:
+      type: string
+      format: uri
+      description: YouTube video URL
+    UrlMetadata:
+      type: object
+      required: [title, durationSec, trimmed]
+      properties:
+        title:
+          type: string
+        durationSec:
+          type: integer
+          minimum: 0
+        trimmed:
+          type: boolean
+      examples:
+        - title: "My Song"
+          durationSec: 180
+          trimmed: false
+    Beatmap:
+      type: object
+      description: Simplified beatmap representation (stub)
+      properties:
+        bpm:
+          type: integer
+        notes:
+          type: array
+          items:
+            type: object
+            properties:
+              t:
+                type: integer
+              lane:
+                type: integer
+    SessionCreateRequest:
+      type: object
+      required: [url]
+      properties:
+        url:
+          $ref: '#/components/schemas/Url'
+        seed:
+          type: integer
+          description: Optional replay seed
+    SessionCreateResponse:
+      type: object
+      required: [sessionId, beatmap, audioUrl]
+      properties:
+        sessionId:
+          type: string
+          format: uuid
+        beatmap:
+          $ref: '#/components/schemas/Beatmap'
+        audioUrl:
+          type: string
+          format: uri
+    Error:
+      type: object
+      required: [code, message]
+      properties:
+        code:
+          type: string
+        message:
+          type: string

@@ -1,0 +1,135 @@
+@startuml
+' ==========================================================
+' Core Domain Class Diagram — Gameplay Core
+' PlayAsYouLike Web Rhythm Game
+' ==========================================================
+!includeurl https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+' ------------ Legend -------------------------------------------------
+'  <<Entity>>        : 永続または一時データを保持するドメインオブジェクト
+'  <<ValueObject>>   : 振る舞いを持たず値で同値性を判定
+'  <<Service>>       : ステートレスなドメインロジック
+'  <<Repository>>    : 永続化インタフェース
+'  USDM Tag          : 参照要件 ( など)
+' ---------------------------------------------------------------------
+
+namespace GameplayCore {
+
+  ' ====== Entities ===================================================
+  class GameSession <<Entity>>  {
+    +id : UUID
+    +track : Track
+    +beatmap : Beatmap
+    +seed : RandomSeed
+    +status : SessionStatus
+    +start() : void
+    +pause() : void
+    +resume() : void
+    +quit() : void
+  }
+
+  class Track <<Entity>>  {
+    +url : Url
+    +title : string
+    +durationSec : int
+    +trimmed : bool
+  }
+
+  class Beatmap <<Entity>>  {
+    +notes : Note[*]
+    +bpm : BPM
+    +createdAt : DateTime
+  }
+
+  class Note <<ValueObject>>  {
+    +timestamp : ms
+    +lane : int
+  }
+
+  class RandomSeed <<ValueObject>>  {
+    +value : int
+  }
+
+  class HitResult <<ValueObject>>  {
+    +noteId : int
+    +judgement : Judgement
+    +offsetMs : int
+  }
+
+  enum SessionStatus {
+    READY
+    RUNNING
+    PAUSED
+    ENDED
+  }
+
+  enum Judgement {
+    PERFECT
+    GOOD
+    MISS
+  }
+
+  ' ====== Services ===================================================
+  class BeatmapGenerator <<Service>>  {
+    +generate(track : Track, seed : RandomSeed) : Beatmap
+  }
+
+  class HitJudge <<Service>>  {
+    +judge(input : PlayerInput, note : Note) : HitResult
+  }
+
+  class PauseService <<Service>>  {
+    +pause(session : GameSession) : void
+    +resume(session : GameSession) : void
+  }
+
+  ' ====== Repositories ===============================================
+  class SessionRepository <<Repository>>  {
+    +save(session : GameSession) : void
+    +findById(id : UUID) : GameSession?
+  }
+
+  class SeedRepository <<Repository>>  {
+    +saveSeed(key : Url, seed : RandomSeed) : void
+    +getSeed(key : Url) : RandomSeed?
+  }
+
+  ' ====== Value Objects ==============================================
+  class Url <<ValueObject>> {
+    +value : string
+    +isValid() : bool
+  }
+
+  class BPM <<ValueObject>>  {
+    +value : int
+  }
+
+  class PlayerInput <<ValueObject>> {
+    +timestamp : ms
+    +key : string
+  }
+
+  ' ====== Relationships ==============================================
+  GameSession --> "1" Track
+  GameSession --> "1" Beatmap
+  GameSession --> "*" HitResult
+  GameSession --> "1" RandomSeed
+
+  Beatmap "1" --> "*" Note
+
+  BeatmapGenerator ..> Track : uses
+  BeatmapGenerator ..> RandomSeed
+  BeatmapGenerator --> Beatmap
+
+  HitJudge ..> PlayerInput
+  HitJudge ..> Note
+  HitJudge --> HitResult
+
+  PauseService ..> GameSession
+
+  SessionRepository ..> GameSession
+  SeedRepository ..> RandomSeed
+
+}
+
+@enduml
