@@ -246,25 +246,6 @@ paths:
                   type: string
                   pattern: '^#[0-9A-Fa-f]{6}$'
                   description: "Optional: base color for session"
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required: [presetId]
-              properties:
-                presetId:
-                  type: string
-                  pattern: '^color-([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$'
-                  description: |
-                    3桁または6桁HEXの基調色指定（例: color-FF6699, color-abc）
-                    - 大文字小文字不問
-                    - 既存presetIdとの命名衝突回避のため color- で始まるIDは予約
-                colorHex:
-                  type: string
-                  pattern: '^#[0-9A-Fa-f]{6}$'
-                  description: "Optional: base color for session"
       responses:
         '200':
           description: Preset selected
