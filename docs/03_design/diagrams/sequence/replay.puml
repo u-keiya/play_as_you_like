@@ -18,6 +18,8 @@ spa -> api : POST /sessions\n{url, seed}  #US-003
 alt Seed キャッシュ整合性確認
     api -> cache : GET seed:{url}
     cache --> api : RandomSeed
+else キャッシュ未命中
+    note over api: キャッシュ未命中の場合は\n生成済み Seed を使用しない
 end
 
 == 譜面生成 ==

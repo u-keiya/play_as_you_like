@@ -1,7 +1,7 @@
 @startuml
 ' ==========================================================
 ' Class Diagram — Dynamic Visual Effects (#US-005)
-' PlaysAsYouLike Web Rhythm Game
+' PlayAsYouLike Web Rhythm Game
 ' ==========================================================
 ' [US-005] VisualEffectPreset API/設計連携: /effects/presets, SessionCreateResponse.presets[]
 !includeurl https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
@@ -21,7 +21,7 @@ namespace GameplayCore {
     +beatmap : Beatmap
     +status : SessionStatus
     +effectsPreset : VisualEffectPreset
-    +presets : List~VisualEffectPreset~  ' #US-005: API連携
+    +presets : List~VisualEffectPreset~ [0..10]  ' #US-005: API連携・最大10件（UI/パフォーマンス要件より）
   }
 
   class VisualEffectPreset <<Entity>> {
@@ -33,6 +33,13 @@ namespace GameplayCore {
     +bgShader : string
     ' #US-005: APIスキーマと同期
   }
+
+  note right of GameSession
+    presets上限10件の根拠:
+    - UI上の選択肢表示・操作性（1画面で完結）
+    - サーバ/クライアント双方のパフォーマンス最適化
+    - ビジネス要件（プリセット乱用防止）
+  end note
 
   ' ====== Value Objects ==============================================
   class MusicFeatures <<ValueObject>> {

@@ -13,7 +13,7 @@ participant BeatmapGenerator
 User -> WebSPA: Replayボタン押下
 WebSPA -> API: GET /replay/{id}
 API -> ReplayService: getSeed(replayId)
-ReplayService -> BeatmapSeedRepository: fetchSeed(sessionId)
+ReplayService -> BeatmapSeedRepository: fetchSeed(replayId)
 BeatmapSeedRepository --> ReplayService: beatmapSeed
 ReplayService --> API: beatmapSeed
 API --> WebSPA: { beatmapSeed }

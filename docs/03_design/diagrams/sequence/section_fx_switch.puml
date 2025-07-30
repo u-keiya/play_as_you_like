@@ -13,7 +13,7 @@ User -> WebSPA: プレイ開始
 WebSPA -> AudioAnalysisSvc: 事前解析リクエスト
 AudioAnalysisSvc --> WebSPA: セグメント情報 (サビ等)
 WebSPA -> FXEngine: applyPreset(intro)
-...
+' ... 省略 ...
 AudioAnalysisSvc -> FXEngine: SectionChange{type: chorus}
 FXEngine -> WebGPU: applyPreset(highEnergy)
 

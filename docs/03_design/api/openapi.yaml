@@ -7,6 +7,14 @@ info:
     API skeleton covering US-001〜US-006 endpoints.
     All payload examples and schemas are **draft** and subject to refinement.
     # 技術選定: MessageBroker=Apache Kafka, ExternalStreaming=gRPC (see ADR-0002, ADR-0004)
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+security:
+  - BearerAuth: []
 servers:
   - url: https://api.playasul.local
 paths:
@@ -21,7 +29,28 @@ paths:
           application/json:
             schema:
               type: object
-              required: [state]
+              oneOf:
+                - required: [state]
+                  properties:
+                    state:
+                      type: string
+                      enum: [running, ended]
+                    colorHex:
+                      type: string
+                      pattern: '^#[0-9A-Fa-f]{6}$'
+                      description: "Optional: base color for session"
+                - required: [state, pausedAt]
+                  properties:
+                    state:
+                      type: string
+                      enum: [paused]
+                    pausedAt:
+                      type: integer
+                      description: "必須: state=paused時の一時停止タイムスタンプ(ms)"
+                    colorHex:
+                      type: string
+                      pattern: '^#[0-9A-Fa-f]{6}$'
+                      description: "Optional: base color for session"
               properties:
                 state:
                   type: string
@@ -198,6 +227,25 @@ paths:
   /effects/presets/select:
     post:
       summary: Select visual effect preset (#US-005, #US-006, #ADR-0004)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [presetId]
+              properties:
+                presetId:
+                  type: string
+                  pattern: '^color-([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$'
+                  description: |
+                    3桁または6桁HEXの基調色指定（例: color-FF6699, color-abc）
+                    - 大文字小文字不問
+                    - 既存presetIdとの命名衝突回避のため color- で始まるIDは予約
+                colorHex:
+                  type: string
+                  pattern: '^#[0-9A-Fa-f]{6}$'
+                  description: "Optional: base color for session"
       requestBody:
         required: true
         content:

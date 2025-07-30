@@ -151,18 +151,19 @@ namespace GameplayCore {
     +save(session : GameSession) : void
     +findById(id : UUID) : GameSession?
     +delete(id : UUID) : void
-    +ttlSec : int
-    +serialize(session : GameSession) : bytes
-    +deserialize(data : bytes) : GameSession
-    ' TTL=900秒, MessagePackシリアライズ
   }
+
+  note right of RedisSessionRepository
+    実装詳細:
+    - TTL=900秒
+    - MessagePackシリアライズ
+  end note
 
   ' ====== Session End/QUIT (#US-001, #US-004) =========================
   GameSession : +end() : void
   ' セッション終了・スコア確定・一時データ削除
 
   ' ====== Relationships ==============================================
-  GameSession --> "1" Track
   GameSession ..> RedisSessionRepository : 永続/削除
   BeatmapGenerator ..> AudioAnalysisAdapter : BPM解析
   GameSession --> "1" Beatmap

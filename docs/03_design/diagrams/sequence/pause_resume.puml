@@ -29,11 +29,17 @@ spa -> user : プレイ再開
 == タイムアウト自動終了 ==
 alt resume within 10 min
   ' 何もしない
-else idle > 10 min <<#RQ05-2>>
+else idle > ${PAUSE_TIMEOUT_MIN} min <<#RQ05-2>>
+note right : デフォルト: 10分\n設定可能な値
   spa -> api : POST /sessions/{id}/stop (reason=timeout)
-  api -> cache : UPDATE session:{id}.status = STOPPED
-  api --> spa : 204 No Content
-  spa -> user : セッション終了通知・トップページへ遷移
+  alt session exists
+    api -> cache : UPDATE session:{id}.status = STOPPED
+    api --> spa : 204 No Content
+    spa -> user : セッション終了通知・トップページへ遷移
+  else session not found
+    api --> spa : 404 NOT_FOUND
+    spa -> user : セッション期限切れ通知・トップページへ遷移
+  end
 end
 
 == 中断終了 ==

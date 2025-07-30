@@ -23,12 +23,11 @@ redis1 -[#red;x]-> retry : ConnectionError
 alt retry ≤ 3 times
   retry -> redis1 : GET preset (retry)
   redis1 -[#red;x]-> retry : ConnectionError
-else retries exhausted
+else retries exhausted & succeed on secondary
   retry -> redis2 : GET preset (failover)
   redis2 --> retry : 200 OK
   retry --> api : preset
   api --> spa : 200 OK (from secondary)
-end
 else all failed
   retry --> api : throws
   api --> spa : 503 Service Unavailable

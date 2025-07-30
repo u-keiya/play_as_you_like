@@ -37,7 +37,7 @@ namespace Infrastructure {
   class ExternalStreamingGateway <<Gateway>> {
     +fetchTrackMeta(trackId : string) : TrackMeta
     +streamAudio(trackId : string) : AudioStream
-    ' 実装: gRPC (#ADR-0002)
+    ' 実装: gRPC (#ADR-0003)
   }
 
   ' 関連
@@ -47,6 +47,11 @@ namespace Infrastructure {
 
   ' RetryHandler 参照
   SessionCache ..> RetryHandler : uses
+
+ ' RetryHandler スタブ
+ class RetryHandler <<Service>> {
+   +execute(fn, retries:int=3): any
+ }
 
 }
 

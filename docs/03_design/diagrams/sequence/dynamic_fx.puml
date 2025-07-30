@@ -21,7 +21,7 @@ loop ~1s interval (変化検知)
   alt latency ≤ 200 ms
     engine -> cache : GET/Find Preset
     engine --> spa : push newPreset (within 1 s)  # US-005 SLA
-  else latency > 200 ms <<#RQ02-3>>
+  else latency > 200 ms  ' #RQ02-3
     spa -> engine : GET /api/effect/sync?clientTime=...
     engine -> analyser : requestCurrentPosition()
     engine --> spa : push /ws/effectPreset (correctedOffset)
