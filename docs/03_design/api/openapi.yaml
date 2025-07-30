@@ -6,13 +6,8 @@ info:
   description: |
     API skeleton covering US-001〜US-006 endpoints.
     All payload examples and schemas are **draft** and subject to refinement.
-    # 技術選定: MessageBroker=Apache Kafka, ExternalStreaming=gRPC (see ADR-0002, ADR-0004)
-components:
-  securitySchemes:
-    BearerAuth:
-      type: http
-      scheme: bearer
-      bearerFormat: JWT
+    
+    技術選定: MessageBroker=Apache Kafka, ExternalStreaming=gRPC (see ADR-0002, ADR-0004)
 security:
   - BearerAuth: []
 servers:
@@ -388,6 +383,11 @@ paths:
         '101':
           description: Switching Protocols (WebSocket upgrade)
 components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
   parameters:
     SessionId:
       name: id
