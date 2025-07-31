@@ -36,12 +36,14 @@ All tests will be executed automatically on every pull request to the `develop` 
 
 ## 5. WebSocket Testing
 
-Our strategy for testing WebSocket endpoints is as follows:
+Our strategy for testing WebSocket endpoints is to **prioritize contract testing** to ensure message integrity and adherence to the OpenAPI specification.
 
-- **/ws/hit-judge**: An integration test will be implemented in `tests/integration/` to verify the connection lifecycle and the real-time message flow. This includes sending `PlayerInput` messages and asserting the reception of `HitResult` or `Warning` messages based on the specifications found in the sequence diagrams.
-- **/ws/effectPreset**: A contract test will be created in `tests/contract/` to validate that messages pushed from the server conform to the `EffectPresetMessage` schema defined in `openapi.yaml`. This test will subscribe to the WebSocket and validate incoming messages against the schema.
+- **/ws/hit-judge**: A contract test has been implemented in `tests/contract/test_websocket_contract.py`. It validates that both sent (`PlayerInput`) and received (`HitResult`, `Warning`) messages conform to their respective schemas in `openapi.yaml`.
+- **/ws/effectPreset**: A contract test has been implemented in `tests/contract/test_websocket_contract.py`. It validates that messages pushed from the server conform to the `EffectPresetMessage` schema, which now includes detailed, per-preset parameter validation using a `discriminator`.
+
+These contract tests require a running WebSocket server (or a mock equivalent) to be executed in the CI pipeline.
 
 ## 6. Open Questions
 
-- (Resolved) The schema for `/ws/effectPreset` is now defined in `openapi.yaml` as `EffectPresetMessage`.
-- The specific parameters for each `presetId` (e.g., `hueShift` for `rainbow`) are listed as examples in `EffectPresetParams`. A more formal, machine-readable definition for each preset's parameters would further improve test accuracy and prevent invalid parameter combinations. This should be discussed with the design team.
+- **(Resolved)** The schema for `/ws/effectPreset` is now defined in `openapi.yaml` with a `discriminator` to enforce per-preset parameters, resolving the previous ambiguity.
+- **(Resolved)** The schemas for `/ws/hit-judge` (`PlayerInput`, `HitResult`, `Warning`) have been formally defined in `openapi.yaml`, enabling contract testing.
