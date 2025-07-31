@@ -408,19 +408,76 @@ components:
         format: uuid
   schemas:
     # --- WebSocket Event Schema for EffectPreset Push ---
-    EffectPresetMessage:            # RQ05-1, RQ06-2
-      type: object
-      required: [schemaVersion, presetId, params]
-      properties:
-        schemaVersion:
-          type: string
-          default: "1.0"
-          description: メッセージスキーマ SemVer (major 不一致で互換性警告)
-        presetId:
-          type: string
-          description: VisualEffectPreset.id を指定
-        params:
-          $ref: '#/components/schemas/EffectPresetParams'
+    EffectPresetMessage: # x-usdm-id: "US-005", x-adr-id: "0005"
+      oneOf:
+        - required: [schemaVersion, presetId, params]
+          properties:
+            schemaVersion:
+              type: string
+              default: "1.0"
+              description: メッセージスキーマ SemVer (major 不一致で互換性警告)
+            presetId:
+              type: string
+              const: rainbow
+              description: VisualEffectPreset.id を指定
+            params:
+              $ref: '#/components/schemas/RainbowParams'
+        - required: [schemaVersion, presetId, params]
+          properties:
+            schemaVersion:
+              type: string
+              default: "1.0"
+              description: メッセージスキーマ SemVer (major 不一致で互換性警告)
+            presetId:
+              type: string
+              const: flash
+              description: VisualEffectPreset.id を指定
+            params:
+              $ref: '#/components/schemas/FlashParams'
+        - required: [schemaVersion, presetId, params]
+          properties:
+            schemaVersion:
+              type: string
+              default: "1.0"
+              description: メッセージスキーマ SemVer (major 不一致で互換性警告)
+            presetId:
+              type: string
+              const: wave
+              description: VisualEffectPreset.id を指定
+            params:
+              $ref: '#/components/schemas/WaveParams'
+        - required: [schemaVersion, presetId, params]
+          properties:
+            schemaVersion:
+              type: string
+              default: "1.0"
+              description: メッセージスキーマ SemVer (major 不一致で互換性警告)
+            presetId:
+              type: string
+              const: sparkle
+              description: VisualEffectPreset.id を指定
+            params:
+              $ref: '#/components/schemas/SparkleParams'
+        - required: [schemaVersion, presetId, params]
+          properties:
+            schemaVersion:
+              type: string
+              default: "1.0"
+              description: メッセージスキーマ SemVer (major 不一致で互換性警告)
+            presetId:
+              type: string
+              const: blur
+              description: VisualEffectPreset.id を指定
+            params:
+              $ref: '#/components/schemas/BlurParams'
+      discriminator:
+        propertyName: presetId
+        mapping:
+          rainbow: '#/components/schemas/EffectPresetMessage/oneOf/0'
+          flash:   '#/components/schemas/EffectPresetMessage/oneOf/1'
+          wave:    '#/components/schemas/EffectPresetMessage/oneOf/2'
+          sparkle: '#/components/schemas/EffectPresetMessage/oneOf/3'
+          blur:    '#/components/schemas/EffectPresetMessage/oneOf/4'
       example:
         schemaVersion: "1.0"
         presetId: "rainbow"
@@ -429,17 +486,9 @@ components:
           durationMs: 5000
           hueShift: 120
 
-    EffectPresetParams:
+    RainbowParams:
       type: object
-      description: |
-        共通パラメータ + Preset 固有パラメータを追加プロパティで許容
-        追加プロパティ例:
-          - rainbow: hueShift (integer 0-360, default 120), saturation (number 0-1, default 1.0)
-          - flash: flashRate (integer 1-20 Hz, default 8), colorHex (hex, default #FFFFFF)
-          - wave: wavelength (int 10-200 px, default 80), amplitude (int 1-50 px, default 20), speed (int 10-500 px/s, default 120)
-          - sparkle: density (number 0-1, default 0.4), colorPalette (array<hex>, default [#FFD700,#FFFFFF])
-          - blur: radius (int 1-30 px, default 12)
-      required: [intensity, durationMs]
+      required: [intensity, durationMs, hueShift]
       properties:
         intensity:
           type: number
@@ -447,14 +496,161 @@ components:
           minimum: 0.0
           maximum: 1.0
           default: 0.7
-          description: "0: 無効化, 1: フル効果。初期は視認性重視で 0.7"
         durationMs:
           type: integer
           minimum: 100
           maximum: 10000
           default: 5000
-          description: "ms単位。UX調査で5sが平均的。上限10s超はUIでprogress必須"
-      additionalProperties: true     # 後方互換
+        hueShift:
+          type: integer
+          minimum: 0
+          maximum: 360
+          default: 120
+          description: "色相シフト量"
+        saturation:
+          type: number
+          minimum: 0.0
+          maximum: 1.0
+          default: 1.0
+          description: "彩度"
+      example:
+        intensity: 0.8
+        durationMs: 5000
+        hueShift: 120
+        saturation: 1.0
+
+    FlashParams:
+      type: object
+      required: [intensity, durationMs, flashRate, colorHex]
+      properties:
+        intensity:
+          type: number
+          format: float
+          minimum: 0.0
+          maximum: 1.0
+          default: 0.7
+        durationMs:
+          type: integer
+          minimum: 100
+          maximum: 10000
+          default: 5000
+        flashRate:
+          type: integer
+          minimum: 1
+          maximum: 20
+          default: 8
+          description: "フラッシュ周波数 (Hz)"
+        colorHex:
+          type: string
+          pattern: '^#[0-9A-Fa-f]{6}$'
+          default: "#FFFFFF"
+          description: "フラッシュ色"
+      example:
+        intensity: 0.7
+        durationMs: 3000
+        flashRate: 10
+        colorHex: "#FF6699"
+
+    WaveParams:
+      type: object
+      required: [intensity, durationMs, wavelength, amplitude, speed]
+      properties:
+        intensity:
+          type: number
+          format: float
+          minimum: 0.0
+          maximum: 1.0
+          default: 0.7
+        durationMs:
+          type: integer
+          minimum: 100
+          maximum: 10000
+          default: 5000
+        wavelength:
+          type: integer
+          minimum: 10
+          maximum: 200
+          default: 80
+          description: "波長 (px)"
+        amplitude:
+          type: integer
+          minimum: 1
+          maximum: 50
+          default: 20
+          description: "振幅 (px)"
+        speed:
+          type: integer
+          minimum: 10
+          maximum: 500
+          default: 120
+          description: "波の進行速度 (px/s)"
+      example:
+        intensity: 0.6
+        durationMs: 4000
+        wavelength: 100
+        amplitude: 30
+        speed: 150
+
+    SparkleParams:
+      type: object
+      required: [intensity, durationMs, density, colorPalette]
+      properties:
+        intensity:
+          type: number
+          format: float
+          minimum: 0.0
+          maximum: 1.0
+          default: 0.7
+        durationMs:
+          type: integer
+          minimum: 100
+          maximum: 10000
+          default: 5000
+        density:
+          type: number
+          minimum: 0.0
+          maximum: 1.0
+          default: 0.4
+          description: "密度"
+        colorPalette:
+          type: array
+          items:
+            type: string
+            pattern: '^#[0-9A-Fa-f]{6}$'
+          maxItems: 10
+          default: ["#FFD700", "#FFFFFF"]
+          description: "カラーパレット"
+      example:
+        intensity: 0.7
+        durationMs: 5000
+        density: 0.5
+        colorPalette: ["#FFD700", "#FFFFFF"]
+
+    BlurParams:
+      type: object
+      required: [intensity, durationMs, radius]
+      properties:
+        intensity:
+          type: number
+          format: float
+          minimum: 0.0
+          maximum: 1.0
+          default: 0.7
+        durationMs:
+          type: integer
+          minimum: 100
+          maximum: 10000
+          default: 5000
+        radius:
+          type: integer
+          minimum: 1
+          maximum: 30
+          default: 12
+          description: "ぼかし半径 (px)"
+      example:
+        intensity: 0.7
+        durationMs: 2000
+        radius: 15
 
     # --- WebSocket Event Schema for Session State Push ---
     SessionStateChangedEvent:
@@ -664,3 +860,69 @@ components:
           value:
             code: JUDGE_LAG
             message: "Hit judge delayed"
+    # --- WebSocket Event Schema for Hit Judge ---
+    PlayerInput: # x-usdm-id: "US-004", x-adr-id: "0004"
+      type: object
+      required: [timestamp, lane, action]
+      properties:
+        timestamp:
+          type: integer
+          description: "入力時刻 (ms, クライアント基準)"
+        lane:
+          type: integer
+          minimum: 0
+          maximum: 3
+          description: "レーン番号 (0-3)"
+        action:
+          type: string
+          enum: [hit, hold, release]
+          description: "入力アクション"
+      example:
+        timestamp: 123456
+        lane: 2
+        action: hit
+
+    HitResult: # x-usdm-id: "US-004", x-adr-id: "0004"
+      type: object
+      required: [timestamp, lane, result, score]
+      properties:
+        timestamp:
+          type: integer
+          description: "判定時刻 (ms, サーバ基準)"
+        lane:
+          type: integer
+          minimum: 0
+          maximum: 3
+          description: "レーン番号 (0-3)"
+        result:
+          type: string
+          enum: [perfect, good, miss]
+          description: "判定結果"
+        score:
+          type: integer
+          description: "加算スコア"
+      example:
+        timestamp: 123457
+        lane: 2
+        result: perfect
+        score: 300
+
+    Warning: # x-usdm-id: "US-004", x-adr-id: "0004"
+      type: object
+      required: [type, message]
+      properties:
+        type:
+          type: string
+          enum: [lag, invalid_input]
+          description: "警告種別"
+        message:
+          type: string
+          description: "警告内容"
+        threshold:
+          type: integer
+          description: "閾値 (ms, type=lag時のみ)"
+      example:
+        type: lag
+        message: "判定遅延が発生"
+        threshold: 200
+
