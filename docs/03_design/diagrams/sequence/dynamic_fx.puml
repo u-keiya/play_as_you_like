@@ -14,7 +14,18 @@ spa -> analyser : WebSocket stream /audio\n(audioUrl)
 analyser --> engine : MusicFeatures (BPM, energy, section ...)
 engine -> cache : GET presets:byFeatures
 cache --> engine : VisualEffectPreset
-engine -> spa : push /ws/effectPreset {presetId, params}
+engine -> spa : push /ws/effectPreset EffectPresetMessage(presetId, params)
+note right of spa
+  例:
+  {
+    "presetId": "rainbow",
+    "params": {
+      "intensity": 0.8,
+      "durationMs": 5000,
+      "hueShift": 120
+    }
+  }
+end note
 
 loop ~1s interval (変化検知)
   analyser --> engine : MusicFeaturesΔ
@@ -25,6 +36,9 @@ loop ~1s interval (変化検知)
     spa -> engine : GET /api/effect/sync?clientTime=...
     engine -> analyser : requestCurrentPosition()
     engine --> spa : push /ws/effectPreset (correctedOffset)
+    note right of spa
+      不正パラメータ時: Error(code=VALIDATION_ERROR) を返却
+    end note
   end
 end
 

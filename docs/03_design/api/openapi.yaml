@@ -375,10 +375,20 @@ paths:
           description: Switching Protocols (WebSocket upgrade)
   /ws/effectPreset:
     get:
-      summary: WebSocket endpoint for effect preset push (#US-005)
+      summary: WebSocket endpoint for effect preset push (#US-005, #US-006)
       description: |
-        WebSocket サブプロトコル:  
+        WebSocket サブプロトコル:
         - receive: effectPreset {presetId, params}
+        # Example (server→client)
+        # {
+        #   "presetId": "rainbow",
+        #   "params": {
+        #     "intensity": 0.8,
+        #     "durationMs": 5000,
+        #     "hueShift": 120
+        #   }
+        # }
+        受信メッセージのスキーマは components/schemas/EffectPresetMessage を参照。
       responses:
         '101':
           description: Switching Protocols (WebSocket upgrade)
@@ -397,6 +407,55 @@ components:
         type: string
         format: uuid
   schemas:
+    # --- WebSocket Event Schema for EffectPreset Push ---
+    EffectPresetMessage:            # RQ05-1, RQ06-2
+      type: object
+      required: [schemaVersion, presetId, params]
+      properties:
+        schemaVersion:
+          type: string
+          default: "1.0"
+          description: メッセージスキーマ SemVer (major 不一致で互換性警告)
+        presetId:
+          type: string
+          description: VisualEffectPreset.id を指定
+        params:
+          $ref: '#/components/schemas/EffectPresetParams'
+      example:
+        schemaVersion: "1.0"
+        presetId: "rainbow"
+        params:
+          intensity: 0.8
+          durationMs: 5000
+          hueShift: 120
+
+    EffectPresetParams:
+      type: object
+      description: |
+        共通パラメータ + Preset 固有パラメータを追加プロパティで許容
+        追加プロパティ例:
+          - rainbow: hueShift (integer 0-360, default 120), saturation (number 0-1, default 1.0)
+          - flash: flashRate (integer 1-20 Hz, default 8), colorHex (hex, default #FFFFFF)
+          - wave: wavelength (int 10-200 px, default 80), amplitude (int 1-50 px, default 20), speed (int 10-500 px/s, default 120)
+          - sparkle: density (number 0-1, default 0.4), colorPalette (array<hex>, default [#FFD700,#FFFFFF])
+          - blur: radius (int 1-30 px, default 12)
+      required: [intensity, durationMs]
+      properties:
+        intensity:
+          type: number
+          format: float
+          minimum: 0.0
+          maximum: 1.0
+          default: 0.7
+          description: "0: 無効化, 1: フル効果。初期は視認性重視で 0.7"
+        durationMs:
+          type: integer
+          minimum: 100
+          maximum: 10000
+          default: 5000
+          description: "ms単位。UX調査で5sが平均的。上限10s超はUIでprogress必須"
+      additionalProperties: true     # 後方互換
+
     # --- WebSocket Event Schema for Session State Push ---
     SessionStateChangedEvent:
       type: object
