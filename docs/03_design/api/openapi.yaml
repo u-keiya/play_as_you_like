@@ -473,11 +473,11 @@ components:
       discriminator:
         propertyName: presetId
         mapping:
-          rainbow: '#/components/schemas/RainbowParams'
-          flash:   '#/components/schemas/FlashParams'
-          wave:    '#/components/schemas/WaveParams'
-          sparkle: '#/components/schemas/SparkleParams'
-          blur:    '#/components/schemas/BlurParams'
+          rainbow: '#/components/schemas/EffectPresetMessage/oneOf/0'
+          flash:   '#/components/schemas/EffectPresetMessage/oneOf/1'
+          wave:    '#/components/schemas/EffectPresetMessage/oneOf/2'
+          sparkle: '#/components/schemas/EffectPresetMessage/oneOf/3'
+          blur:    '#/components/schemas/EffectPresetMessage/oneOf/4'
       example:
         schemaVersion: "1.0"
         presetId: "rainbow"
