@@ -40,12 +40,15 @@ def effect_preset_schema(openapi_spec):
 @pytest.fixture(scope="module")
 def hit_judge_schemas(openapi_spec):
     """Hit Judge関連のスキーマを返す"""
-    schemas = openapi_spec["components"]["schemas"]
-    return {
-        "PlayerInput": schemas["PlayerInput"],
-        "HitResult":  schemas["HitResult"],
-        "Warning":    schemas["Warning"],
-    }
+    try:
+        schemas = openapi_spec["components"]["schemas"]
+        return {
+            "PlayerInput": schemas["PlayerInput"],
+            "HitResult":  schemas["HitResult"],
+            "Warning":    schemas["Warning"],
+        }
+    except KeyError as e:
+        pytest.fail(f"Required schema not found in OpenAPI spec: {e}")
 
 # --- Test Cases ---
 
