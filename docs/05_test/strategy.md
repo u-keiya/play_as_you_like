@@ -36,14 +36,18 @@ All tests will be executed automatically on every pull request to the `develop` 
 
 ## 5. WebSocket Testing
 
-Our strategy for testing WebSocket endpoints is to **prioritize contract testing** to ensure message integrity and adherence to the OpenAPI specification.
+Our strategy for testing WebSocket endpoints combines **contract testing** for message integrity and **integration testing** for interaction flows.
 
-- **/ws/hit-judge**: A contract test has been implemented in `tests/contract/test_websocket_contract.py`. It validates that both sent (`PlayerInput`) and received (`HitResult`, `Warning`) messages conform to their respective schemas in `openapi.yaml`.
-- **/ws/effectPreset**: A contract test has been implemented in `tests/contract/test_websocket_contract.py`. It validates that messages pushed from the server conform to the `EffectPresetMessage` schema, which now includes detailed, per-preset parameter validation using a `discriminator`.
+- **Contract Tests (`tests/contract/test_websocket_contract.py`)**:
+  - These tests are now **active** in the CI pipeline.
+  - They validate that all WebSocket messages (`PlayerInput`, `HitResult`, `Warning`, `EffectPresetMessage`) strictly adhere to the `openapi.yaml` schemas.
+  - The test for `EffectPresetMessage` correctly interprets the `discriminator` to enforce per-preset parameter requirements.
+- **Integration Tests (`tests/integration/test_websocket_interaction.py`)**:
+  - A new test layer to verify the request/response correlation.
+  - For example, it ensures that when a `PlayerInput` is sent to `/ws/hit-judge`, a valid `HitResult` or `Warning` is received in response.
 
-These contract tests require a running WebSocket server (or a mock equivalent) to be executed in the CI pipeline.
+These tests require a running WebSocket server (or a mock equivalent) to be executed in the CI pipeline.
 
 ## 6. Open Questions
 
-- **(Resolved)** The schema for `/ws/effectPreset` is now defined in `openapi.yaml` with a `discriminator` to enforce per-preset parameters, resolving the previous ambiguity.
-- **(Resolved)** The schemas for `/ws/hit-judge` (`PlayerInput`, `HitResult`, `Warning`) have been formally defined in `openapi.yaml`, enabling contract testing.
+- **CI Setup for WebSocket Tests**: How should the test WebSocket server be managed in the CI environment (e.g., via Docker Compose, a background process, or a mock server library) to ensure these new contract and integration tests run reliably?

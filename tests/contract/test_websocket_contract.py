@@ -40,24 +40,33 @@ def hit_judge_schemas(openapi_spec):
 
 # --- Test Cases ---
 
-# @pytest.mark.skip(reason="This test requires a running WebSocket server that pushes messages.")
-def test_effect_preset_message_contract(effect_preset_schema, schema_resolver):
+def test_effect_preset_message_contract(openapi_spec, effect_preset_schema, schema_resolver):
     """
     /ws/effectPreset から受信したメッセージが
-    OpenAPIで定義されたスキーマに準拠していることを検証する。
+    OpenAPIで定義されたスキーマ(discriminatorを含む)に準拠していることを検証する。
     """
     ws_url = urljoin(BASE_URL, "/ws/effectPreset")
-    
+
     try:
         ws = create_connection(ws_url, timeout=10)
-        
-        # サーバーからのメッセージを1つ待つ
+
         message_str = ws.recv()
         message = json.loads(message_str)
-        
-        # スキーマ検証
-        jsonschema.validate(instance=message, schema=effect_preset_schema, resolver=schema_resolver)
-        
+
+        # 1. discriminator を使って、どの oneOf スキーマか特定する
+        preset_id = message.get("presetId")
+        assert preset_id is not None, "Message must contain 'presetId'"
+
+        mapping = effect_preset_schema.get("discriminator", {}).get("mapping", {})
+        schema_ref = mapping.get(preset_id)
+        assert schema_ref is not None, f"No schema mapping found for presetId: {preset_id}"
+
+        # 2. $ref から具体的なスキーマを取得
+        # schema_ref は '#/components/schemas/EffectPresetMessage/oneOf/0' のような形式
+        with schema_resolver.resolving(schema_ref) as specific_schema:
+            # 3. 特定したスキーマでバリデーション実行
+            jsonschema.validate(instance=message, schema=specific_schema, resolver=schema_resolver)
+
     except TimeoutError:
         pytest.fail("WebSocket connection timed out. No message received from server.")
     except Exception as e:
@@ -66,7 +75,6 @@ def test_effect_preset_message_contract(effect_preset_schema, schema_resolver):
         if 'ws' in locals() and ws.connected:
             ws.close()
 
-# @pytest.mark.skip(reason="This test requires a running WebSocket server that responds to inputs.")
 def test_hit_judge_message_contract(hit_judge_schemas, schema_resolver):
     """
     /ws/hit-judge との送受信メッセージが
