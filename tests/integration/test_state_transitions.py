@@ -1,6 +1,4 @@
-import pytest
 import requests
-import uuid
 from urllib.parse import urljoin
 
 # --- Test Configuration ---
